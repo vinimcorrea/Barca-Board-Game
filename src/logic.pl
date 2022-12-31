@@ -1,6 +1,7 @@
 :- use_module(library(lists)).
 :- consult('board.pl').
 :- consult('utils.pl').
+:- consult('moves.pl').
 
 
 % piece(?Character, ?Animal, ?Color). 
@@ -178,9 +179,9 @@ afraid(Row, Y, Board) :-
     ).
 
 
-possible_movement_up_right(Position, Board) :-
-    position_to_coordinates(Position, X, Y),
-    occupied(X, Y, Board), !.
+%possible_movement_up_right(Position, Board) :-
+%    position_to_coordinates(Position, X, Y),
+%    occupied(X, Y, Board), !.
 
 %possible_movement_up_right(Position,Board) :-
 %    \+ afraid(X, Y, Board).
@@ -194,189 +195,17 @@ show_possible_moves(GameState, [Position|T], D) :-
     show_possible_moves(NewGameState, T, D).
 
 
-print_board_with_moves(GameState, Position) :-
-    lion_moves(Position, GameState, Moves),
+print_board_with_o_moves(GameState, Position) :-
+    possible_moves_orthogonally(GameState, Position, Moves),
     show_possible_moves(GameState, Moves, NewGameState),
     display_game(NewGameState).
 
+print_board_with_d_moves(GameState, Position) :-
+    possible_moves_diagonally(GameState, Position, Moves),
+    show_possible_moves(GameState, Moves, NewGameState),
+    display_game(NewGameState).
 
-
-%find_diagonal_moves(X, Y, _, Moves) :-
-%    % Base case: Position is not within bounds or is occupied
-%    (X < 1; X > 8; Y < 1; Y > 8),
-%    !,
-%    Moves = [].
-%find_diagonal_moves(X, Y, GameState, Moves) :-
-%    occupied(X,Y,GameState),
-%    !,
-%    Moves = [].
-%
-%find_diagonal_moves(X, Y, GameState, Moves) :-
-%    % Check up-left
-%    X1 is X - 1,
-%    Y1 is Y - 1,
-%    find_diagonal_moves(X1, Y1, GameState, Moves1),
-%    % Check up-right
-%    Y2 is Y + 1,
-%    find_diagonal_moves(X1, Y2, GameState, Moves2),
-%    % Check down-left
-%    X2 is X + 1,
-%    find_diagonal_moves(X2, Y1, GameState, Moves3),
-%    % Check down-right
-%    find_diagonal_moves(X2, Y2, GameState, Moves4),
-%    % Concatenate all lists of moves
-%    coordinates_to_position(X, Y, Move),
-%    append([Move|Moves1], [Move|Moves2], Temp1),
-%    append(Temp1, [Move|Moves3], Temp2),
-%    append(Temp2, [Move|Moves4], Moves).
-
-% rook(+Board, +Row, +Col, -Moves)
-%
-%    Moves is a list of all possible moves that a rook at position (Row, Col)
-%    can make on the given Board.
-% rook(+Board, +Row, +Col, -Moves)
-%
-%    Moves is a list of all possible moves that a rook at position (Row, Col)
-%    can make on the given Board.
-%rook(Board, Row, Col, Moves) :-
-%%    findall((NewRow, Col), (between(1, 8, NewRow), NewRow \= Row, \+ occupied(NewRow, Col, Board), (NewRow < Row; NewRow > Row)), Rows),
-%    findall((Row, NewCol), (between(1, 7, NewCol), NewCol \= Col, (NewCol < Col; NewCol > Col)), Cols),
-%    append([], Cols, AllMoves),
-%    member((BlockingRow, BlockingCol), AllMoves),
-%    occupied(BlockingRow, BlockingCol, Board), !,
-%    findall((MoveRow, MoveCol), (
-%                                    member((MoveRow, MoveCol), AllMoves),
-%                                    (MoveRow \= BlockingRow;
-%                                    MoveCol \= BlockingCol)),
-%            Moves).
-
-
-possible_moves_orthogonally(GameState,Row,Col,Moves):-
-        possible_moves_up_first(GameState,Row,Col,MovesUp),
-        possible_moves_down_first(GameState,Row,Col,MovesDown),
-        possible_moves_left_first(GameState,Row,Col,MovesLeft),
-        possible_moves_right_first(GameState,Row,Col,MovesRight),
-
-        append([], MovesUp, Moves1),
-        append(Moves1, MovesDown, Moves2),
-        append(Moves2, MovesLeft, Moves3),
-        append(Moves3, MovesRight, Moves).
-
-
-%possible_moves_up(GameState, BlockingRow, BlockingCol, []) :-     
-%   !, occupied(BlockingRow, BlockingCol, GameState).
-
-
-possible_moves_up_first(_, Row, _, []) :-
-    Row > 9, !.
-possible_moves_up_first(GameState, Row, Col, []) :-
-    NewRow is Row+1,
-    occupied(NewRow, Col, GameState), !.
-
-possible_moves_up_first(GameState, Row, Col, Moves) :-
-    NewRow is Row+1,
-    \+ occupied(NewRow, Col, GameState),
-    coordinates_to_position(NewRow, Col,  Position),
-    NR is NewRow +1,
-    possible_moves_up(GameState, NR, Col, Moves1),
-    append([Position], Moves1, Moves).
-
-
-possible_moves_up(_, Row, _, []) :-
-   Row > 10, !.
-
-possible_moves_up(GameState, Row, Col, []) :-
-    Row > 1,
-    occupied(Row, Col, GameState), !.
-
-possible_moves_up(GameState, Row, Col, Moves) :-
-   NewRow is Row + 1,
-   possible_moves_up(GameState, NewRow, Col, MovesUp),
-   coordinates_to_position(Row, Col,  Position),
-   append([Position], MovesUp, Moves).
-
-
-possible_moves_down_first(_, Row, _, []) :-
-    Row < 2, !.
-possible_moves_down_first(GameState, Row, Col, []) :-
-    NewRow is Row-1,
-    occupied(NewRow, Col, GameState), !.
-
-possible_moves_down_first(GameState, Row, Col, Moves) :-
-    NewRow is Row-1,
-    \+ occupied(NewRow, Col, GameState),
-    coordinates_to_position(NewRow, Col,  Position),
-    NR is NewRow-1,
-    possible_moves_down(GameState, NR, Col, Moves1),
-    append([Position], Moves1, Moves).
-
-possible_moves_down(_, Row, _, []) :-
-    Row < 1, !.
-
-possible_moves_down(GameState, Row, Col, []) :-
-    Row < 10,
-    occupied(Row, Col, GameState), !.
-
-possible_moves_down(GameState, Row, Col, Moves) :-
-   NewRow is Row - 1,
-   possible_moves_down(GameState, NewRow, Col, MovesUp),
-   coordinates_to_position(Row, Col,  Position),
-   append([Position], MovesUp, Moves).
-
-possible_moves_left_first(_, _, Col, []) :-
-    Col < 2, !.
-possible_moves_left_first(GameState, Row, Col, []) :-
-    NewCol is Col-1,
-    occupied(Row, NewCol, GameState), !.
-
-possible_moves_left_first(GameState, Row, Col, Moves) :-
-    NewCol is Col-1,
-    \+ occupied(Row, NewCol, GameState),
-    coordinates_to_position(Row, NewCol,  Position),
-    NC is NewCol-1,
-    possible_moves_left(GameState, Row, NC, Moves1),
-    append([Position], Moves1, Moves).
-
-possible_moves_left(_, _, Col, []) :-
-    Col < 1, !.
-
-possible_moves_left(GameState, Row, Col, []) :-
-    Col > 1,
-    occupied(Row, Col, GameState), !.
-
-possible_moves_left(GameState, Row, Col, Moves) :-
-   NewCol is Col - 1,
-   possible_moves_left(GameState, Row, NewCol, MovesUp),
-   coordinates_to_position(Row, Col,  Position),
-   append([Position], MovesUp, Moves).
-
-possible_moves_right_first(_, _, Col, []) :-
-    Col > 9, !.
-possible_moves_right_first(GameState, Row, Col, []) :-
-    NewCol is Col+1,
-    occupied(Row, NewCol, GameState), !.
-
-possible_moves_right_first(GameState, Row, Col, Moves) :-
-    NewCol is Col+1,
-    \+ occupied(Row, NewCol, GameState),
-    coordinates_to_position(Row, NewCol,  Position),
-    NC is NewCol+1,
-    possible_moves_right(GameState, Row, NC, Moves1),
-    append([Position], Moves1, Moves).
-
-possible_moves_right(_, _, Col, []) :-
-    Col > 10, !.
-
-possible_moves_right(GameState, Row, Col, []) :-
-    Col > 1,
-    occupied(Row, Col, GameState), !.
-
-possible_moves_right(GameState, Row, Col, Moves) :-
-   NewCol is Col + 1,
-   possible_moves_right(GameState, Row, NewCol, MovesUp),
-   coordinates_to_position(Row, Col,  Position),
-   append([Position], MovesUp, Moves).
-
-
-
-
+print_board_with_elephant_moves(GameState, Position) :-
+    possible_moves_elephant(GameState, Position, Moves),
+    show_possible_moves(GameState, Moves, NewGameState),
+    display_game(NewGameState).
