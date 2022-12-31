@@ -57,7 +57,7 @@ possible_moves_up_right(GameState, Row, Col, Moves) :-
 
 
 possible_moves_up_left_first(_, Row, Col, []) :-
-    (Row > 9 ; Col > 2), !.
+    (Row > 9 ; Col < 2), !.
 
 possible_moves_up_left_first(GameState, Row, Col, []) :-
     NewRow is Row+1,

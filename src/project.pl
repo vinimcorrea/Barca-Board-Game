@@ -118,10 +118,10 @@ print_game_rules :-
 
 % error on maplist
 % start_game/0
-start_game :-
-    write('Print board here'), nl,
-    create_board(Board),
-    display_board(Board).
+%start_game :-
+%    write('Print board here'), nl,
+%    create_board(Board),
+%    display_board(Board).
 
 
 /**

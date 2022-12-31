@@ -36,11 +36,11 @@ char_at_position(GameState, X-Y, Char) :-
 % The piece is represented as a tuple (AnimalType, ColorType, X, Y) where AnimalType is the type of the piece (mouse, lion, elephant),
 % and Colortype is the type of the color of the piece (white, black)
 % X and Y are the coordinates of the piece on the board.
-piece1(AnimalType, ColorType, X, Y) :-
-    member(AnimalType, [mouse, lion, elephant]),
-    member(ColorType, [white, black]),
-    between(1, 10, X),
-    between(1, 10, Y).
+%piece1(AnimalType, ColorType, X, Y) :-
+%    member(AnimalType, [mouse, lion, elephant]),
+%    member(ColorType, [white, black]),
+%    between(1, 10, X),
+%    between(1, 10, Y).
 
 % select_piece(+GameState, +Player, +X-+Y)
 % print if piece is from player or not
@@ -90,24 +90,24 @@ is_piece_from_player(Player, Piece) :-
 
 % Define the valid_move/6 predicate
 % valid_move(+Type, +Row, +Col, +Row1, +Col1, +Board)
-valid_move(Type, Row, Col, Row1, Col1, Board) :-
-    movement_rule(Type, Rule),
-    (
-      Rule = orthogonal,
-      (Row = Row1 ; Col = Col1),
-      \+ occupied(Row1, Col1, Board),
-      \+ afraid(Type, Row1, Col1, Board)
-    ;
-      Rule = diagonal,
-      abs(Row - Row1) =:= abs(Col - Col1),
-      \+ occupied(Row1, Col1, Board),
-      \+ afraid(Type, Row1, Col1, Board)
-    ;
-      Rule = both,
-      (Row = Row1 ; Col = Col1 ; abs(Row - Row1) =:= abs(Col - Col1)),
-      \+ occupied(Row1, Col1, Board),
-      \+ afraid(Type, Row1, Col1, Board)
-    ).
+%valid_move(Type, Row, Col, Row1, Col1, Board) :-
+%    movement_rule(Type, Rule),
+%    (
+%      Rule = orthogonal,
+%      (Row = Row1 ; Col = Col1),
+%      \+ occupied(Row1, Col1, Board),
+%      \+ afraid(Row1, Col1, Board)
+%    ;
+%      Rule = diagonal,
+%      abs(Row - Row1) =:= abs(Col - Col1),
+%      \+ occupied(Row1, Col1, Board),
+%      \+ afraid(Row1, Col1, Board)
+%    ;
+%      Rule = both,
+%      (Row = Row1 ; Col = Col1 ; abs(Row - Row1) =:= abs(Col - Col1)),
+%      \+ occupied(Row1, Col1, Board),
+%      \+ afraid(Row1, Col1, Board)
+%    ).
   
 % Define the occupied/3 predicate
 % occupied(+Row, +Col, +Board)
@@ -195,17 +195,17 @@ show_possible_moves(GameState, [Position|T], D) :-
     show_possible_moves(NewGameState, T, D).
 
 
-print_board_with_o_moves(GameState, Position) :-
+print_board_with_moves(GameState, mice, Position) :-
     possible_moves_orthogonally(GameState, Position, Moves),
     show_possible_moves(GameState, Moves, NewGameState),
     display_game(NewGameState).
 
-print_board_with_d_moves(GameState, Position) :-
+print_board_with_moves(GameState, lion, Position) :-
     possible_moves_diagonally(GameState, Position, Moves),
     show_possible_moves(GameState, Moves, NewGameState),
     display_game(NewGameState).
 
-print_board_with_elephant_moves(GameState, Position) :-
+print_board_with_moves(GameState, elephant, Position) :-
     possible_moves_elephant(GameState, Position, Moves),
     show_possible_moves(GameState, Moves, NewGameState),
     display_game(NewGameState).
