@@ -99,7 +99,7 @@ position_to_coordinates(i6, 6, 9).
 position_to_coordinates(i7, 7, 9).
 position_to_coordinates(i8, 8, 9).
 position_to_coordinates(i9, 9, 9).
-position_to_coordinates(i10,10, 10).
+position_to_coordinates(i10,10, 9).
 position_to_coordinates(j1, 1, 10).
 position_to_coordinates(j2, 2, 10).
 position_to_coordinates(j3, 3, 10).

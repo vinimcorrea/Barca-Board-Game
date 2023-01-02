@@ -1,21 +1,23 @@
 :- consult('logic.pl').
 :- consult('utils.pl').
 :- consult('win.pl').
+:- consult('bot.pl').
 
-filter_input(Input) :-
-    (   Input = 0
-    ;   
-        atom_chars(Input, A),
-        A = [Char, Number],
-        char_type(Number, digit),
-        char_type(Char, lower)
-    ).
 
-char_type(Char, lower) :-
-    member(Char, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']).
-
-char_type(Char, digit) :-
-    member(Char, ['1','2','3','4','5','6','7','8','9','10']).
+%filter_input(Input) :-
+%    (   Input = 0
+%    ;   
+%        atom_chars(Input, A),
+%        A = [Char, Number],
+%        char_type(Number, digit),
+%        char_type(Char, lower)
+%    ).
+%
+%char_type(Char, lower) :-
+%    member(Char, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']).
+%
+%char_type(Char, digit) :-
+%    member(Char, ['1','2','3','4','5','6','7','8','9','10']).
 
 
 % valid_move(+Board, +Animal, +X, +Y, +X1, +Y1)
@@ -84,7 +86,6 @@ read_piece(Board, Player, Row, Col, Animal) :-
         position_to_coordinates(Input, Row, Col),
 %        check_piece(Board, Player, Row-Col),
         char_at_position(Board, Row-Col, Element),
-%        check_afraid(Board, Player, Row-Col),
         player(Player, Color),
         piece(Element, Animal, Color),
         coordinates_to_position(Row, Col, Position),
@@ -120,7 +121,50 @@ game_loop(Player,Board) :-
         display_game(NewBoard),
         game_loop(NextPlayer,NewBoard).
 
-game_loop(Player, Board) :-
-    display_game(Board),
+game_loop(Player, _) :-
     write('Player '), write(Player), write(' has won!'), nl,
     write('End of game. Thanks for playing!').
+
+game_loop_bot(2, Board) :-
+    easybot(2, Board, NewBoard),
+    \+ game_over(NewBoard, 2),
+    display_game(NewBoard),
+    write('PC turn:'), nl, 
+    game_loop_bot(1, NewBoard).
+
+game_loop_bot(1, Board) :-
+    turn(1,Board,NewBoard),
+    \+ game_over(NewBoard, 2),
+    display_game(NewBoard),
+    game_loop_bot(2, NewBoard).
+
+game_loop_bot(1, _) :-
+    write('You won!'), nl,
+    write('End of game. Thanks for playing!').
+
+game_loop_bot(2, _) :-
+    write('Player 2 (PC) has won!'), nl,
+    write('End of game. Thanks for playing!').
+
+game_loop_only_bot(1, Board) :-
+    easybot(1, Board, NewBoard),
+    \+ game_over(NewBoard, 1),
+    write('PC'), write(1), write(' turn:'), nl,
+    display_game(NewBoard),
+    game_loop_only_bot(2, NewBoard).
+
+game_loop_only_bot(2, Board) :-
+    easybot(2, Board, NewBoard),
+    \+ game_over(NewBoard, 2),
+    write('PC'), write(2), write(' turn:'), nl,
+    display_game(NewBoard),
+    game_loop_only_bot(1, NewBoard).
+
+game_loop_only_bot(1, _) :-
+    write('PC1 has won!'), nl,
+    write('End of game. Thanks for playing!').
+
+game_loop_only_bot(2, _) :-
+    write('PC2 has won!'), nl,
+    write('End of game. Thanks for playing!').
+    

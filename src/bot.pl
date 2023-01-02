@@ -1,5 +1,6 @@
 :-use_module(library(random)).
 :-use_module(library(lists)).
+:- consult('logic.pl').
 
 % -------------------------------------
 %         EASY BOT - RANDOM   
@@ -14,155 +15,79 @@
 % ------------------
 %       Code 
 
-% Choose a random play from all possible plays for the given player in the
-% given game state.
-choose_random_play(Player, GameState, Play) :-
-    % Find all possible plays for the given player.
-    findall(PossiblePlay, possible_play(Player, GameState, PossiblePlay), PossiblePlays),
-    % Choose a random play from the list of possible plays.
-    random_member(Play, PossiblePlays).
-% Define the choose_random_play/3 predicate
-% choose_random_play(+Player, +Board, -Play)
-choose_random_play(Player, Board, Play) :-
-    findall(P, available_play(Player, Board, P), Plays),
-    random_member(Play, Plays).
+animal_board_with_moves(GameState, mice, Position, Moves) :-
+    possible_moves_orthogonally(GameState, Position, Moves).
 
-% Define the piece types and their movement rules
-piece_type(mouse).
-piece_type(lion).
-piece_type(elephant).
+animal_board_with_moves(GameState, lion, Position, Moves) :-
+    possible_moves_diagonally(GameState, Position, Moves).
 
-movement_rule(mouse, orthogonal).
-movement_rule(lion, diagonal).
-movement_rule(elephant, both).
+animal_board_with_moves(GameState, elephant, Position, Moves) :-
+    possible_moves_elephant(GameState, Position, Moves).
 
-% Define the fear relationships between the pieces
-afraid_of(mouse, lion).
-afraid_of(lion, elephant).
-afraid_of(elephant, mouse).
 
-% Define the coordinates of the watering holes
-watering_hole(1, 5).
-watering_hole(1, 6).
-watering_hole(1, 7).
-watering_hole(10, 5).
-watering_hole(10, 6).
-watering_hole(10, 7).
+easybot(Player,GameState, UpdatedBoard) :-
+        get_player_pieces(GameState, Player, Pieces),
+        length(Pieces, Choices),
+        RealChoices is Choices-1,
+        random(0, RealChoices, Choice),
+        nth0(Choice, Pieces, Position),
+        position_to_coordinates(Position, Row, Col),
+        char_at_position(GameState, Row-Col, Piece),
+        piece(Piece, Animal, _),
+        % If the element is a piece, get all the possible moves for that piece
+        animal_board_with_moves(GameState, Animal, Position, Moves), !,
+        % Choose a random move from the list of possible moves
+        length(Moves, NumMoves),
+        random(0, NumMoves, MoveIndex),
+        nth0(MoveIndex, Moves, NewPosition),
+        position_to_coordinates(NewPosition, X, Y),
+        update_board(Row-Col, X-Y, GameState, UpdatedBoard).
+        % Update the board with the chosen move.
 
-% Define the board size
-board_size(10, 10).
+% Define the greedy_steps/3 predicate
+greedy_steps(Board, Player, Steps) :-
+    % Get the pieces belonging to the player
+    get_player_pieces(Board, Player, Pieces),
+    % Get the positions of all the watering holes
+    findall(Pos, watering_hole(Pos), WateringHoles),
+    % Find the minimum number of steps needed to reach a watering hole
+    greedy_steps(Pieces, WateringHoles, Steps).
 
-% Define the pieces on the board
-% piece(PieceType, Owner, Row, Column)
-piece(mouse, 1, 2, 5).
-piece(mouse, 1, 2, 6).
-piece(mouse, 1, 2, 7).
-piece(lion, 1, 1, 5).
-piece(lion, 1, 1, 6).
-piece(lion, 1, 1, 7).
-piece(elephant, 1, 1, 6).
+% Define the greedy_steps/3 predicate (auxiliary predicate)
+greedy_steps(_, [], inf).
+greedy_steps(Pieces, [H|T], Steps) :-
+    greedy_steps(Pieces, T, RestSteps),
+    min_steps(Pieces, H, PieceSteps),
+    Steps is min(PieceSteps, RestSteps).
 
-piece(mouse, 2, 9, 5).
-piece(mouse, 2, 9, 6).
-piece(mouse, 2, 9, 7).
-piece(lion, 2, 10, 5).
-piece(lion, 2, 10, 6).
-piece(lion, 2, 10, 7).
-piece(elephant, 2, 10, 6).
+% Define the min_steps/3 predicate (auxiliary predicate)
+min_steps([], _, inf).
+min_steps([H|T], Target, Steps) :-
+    % Find the minimum number of steps needed to reach the target position
+    % from the current position
+    greedy_plays(H, Target, Plays),
+    length(Plays, PlaySteps),
+    min_steps(T, Target, RestSteps),
+    Steps is min(PlaySteps, RestSteps).
 
-% Define the available_play/3 predicate
-% available_play(+Player, +Board, -Play)
-available_play(Player, Board, (Piece, Moves)) :-
-  member(Piece, Board),
-  Piece = piece(Type, Player, Row, Col),
-  findall(move(Row1, Col1), valid_move(Type, Row, Col, Row1, Col1, Board), Moves),
-  Moves \= [].
+% Define the greedy_plays/3 predicate
+greedy_plays(Plays, Target, Sequence) :-
+    greedy_plays(Plays, Target, [], Sequence).
 
-% Define the valid_move/6 predicate
-% valid_move(+Type, +Row, +Col, +Row1, +Col1, +Board)
-valid_move(Type, Row, Col, Row1, Col1, Board) :-
-    movement_rule(Type, Rule),
-    (
-      Rule = orthogonal,
-      (Row = Row1 ; Col = Col1),
-      \+ occupied(Row1, Col1, Board),
-      \+ afraid(Type, Row1, Col1, Board)
-    ;
-      Rule = diagonal,
-      abs(Row - Row1) =:= abs(Col - Col1),
-      \+ occupied(Row1, Col1, Board),
-      \+ afraid(Type, Row1, Col1, Board)
-    ;
-      Rule = both,
-      (Row = Row1 ; Col = Col1 ; abs(Row - Row1) =:= abs(Col - Col1)),
-      \+ occupied(Row1, Col1, Board),
-      \+ afraid(Type, Row1, Col1, Board)
-    ).
-  
-% Define the occupied/3 predicate
-% occupied(+Row, +Col, +Board)
-occupied(Row, Col, Board) :-
-    nth0(Row, Board, RowList),
-    nth0(Col, RowList, Piece),
-    Piece \= '-'.
-
-% Define the afraid/4 predicate.
-% Animals from the same player dont fear each other. Only if the animal is from a diffrent player.
-% afraid(+Type, +Row, +Col, +Board)
-afraid(Type, Row, Col, Board) :-
-    afraid_of(Type, AfraidType),
-    (
-        (Row1 is Row + 1, Col1 is Col + 1,
-         occupied(Row1, Col1, Board),
-         piece_type(Piece, AfraidType))
-    ;
-        (Row1 is Row + 1, Col1 is Col, occupied(Row1, Col1, Board), piece_type(Piece, AfraidType))
-    ;
-        (Row1 is Row + 1, Col1 is Col - 1, occupied(Row1, Col1, Board), piece_type(Piece, AfraidType))
-    ;
-        (Row1 is Row, Col1 is Col + 1, occupied(Row1, Col1, Board), piece_type(Piece, AfraidType))
-    ;
-        (Row1 is Row, Col1 is Col - 1, occupied(Row1, Col1, Board), piece_type(Piece, AfraidType))
-    ;
-        (Row1 is Row - 1, Col1 is Col + 1, occupied(Row1, Col1, Board), piece_type(Piece, AfraidType))
-    ;
-        (Row1 is Row - 1, Col1 is Col, occupied(Row1, Col1, Board), piece_type(Piece, AfraidType))
-    ;
-        (Row1 is Row - 1, Col1 is Col - 1, occupied(Row1, Col1, Board), piece_type(Piece, AfraidType))
+% Define the greedy_plays/4 predicate (auxiliary predicate)
+greedy_plays([], _, Acc, Acc) :- !.
+greedy_plays([Play|T], Target, Acc, Sequence) :-
+    (   Play = Target
+    ->  Sequence = [Play|Acc]
+    ;   greedy_plays(T, Target, [Play|Acc], Sequence)
     ).
 
-% Define the piece_type/2 predicate
-% piece_type(?Piece, ?Type)
-piece_type(piece(Type, _, _, _), Type).
+
 
 % Define the choose_random_play/2 predicate
 % choose_random_play(+Plays, -Play)
 choose_random_play(Plays, Play) :-
     random_member(Play, Plays).
 
-/*
-the findall/3 predicate is used to find all the valid plays for a mouse 
-located at position (2,5) on the board, and the choose_random_play/2 
-predicate is used to choose a random play from the resulting list of plays.
-*/
-% Example usage:
-% ?- findall(Play, valid_move(mouse, 2, 5, Row1, Col1, Board), Plays),
-%    choose_random_play(Plays, Play).
-% Plays = [move(2,5,3,5), move(2,5,2,6)],
-% Play = move(2,5,2,6).
 
-
-
-
-
-% -------------------------------------
-%      HARD BOT - DIFFICULT LEVEL  
-% -------------------------------------
-
-% DICA: ter 1 variavel para peças em perigo
-% (Npieces - N'pieces)
-
-% Podemos ter uma função que tem criterios * peso de cada jogada. 
-% Assim conseguimos saber qual a melhor jogada
-% Se houver 2 de igual valor, escolhe-se uma random
 

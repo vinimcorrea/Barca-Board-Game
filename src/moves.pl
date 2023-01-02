@@ -96,10 +96,11 @@ possible_moves_elephant(GameState, Position, Moves) :-
     
 possible_moves_diagonally(GameState, Position, Moves):-
         position_to_coordinates(Position, Row, Col),
-        possible_moves_up_right_first(GameState,Row,Col,MovesUpRight),
-        possible_moves_up_left_first(GameState,Row,Col,MovesUpLeft),
-        possible_moves_down_right_first(GameState,Row,Col,MovesDownRight),
-        possible_moves_down_left_first(GameState,Row,Col,MovesDownLeft),
+        char_at_position(GameState, Row-Col, Piece),
+        possible_moves_up_right_first(GameState,Row,Col, Piece, MovesUpRight),
+        possible_moves_up_left_first(GameState,Row,Col, Piece, MovesUpLeft),
+        possible_moves_down_right_first(GameState,Row,Col, Piece, MovesDownRight),
+        possible_moves_down_left_first(GameState,Row,Col, Piece, MovesDownLeft),
 
         append([], MovesUpRight, Moves1),
         append(Moves1, MovesUpLeft, Moves2),
@@ -107,24 +108,25 @@ possible_moves_diagonally(GameState, Position, Moves):-
         append(Moves3, MovesDownLeft, Moves).
 
 
-possible_moves_up_right_first(_, Row, Col, []) :-
+possible_moves_up_right_first(_, Row, Col,_, []) :-
     (Row > 9 ; Col > 9), !.
 
-possible_moves_up_right_first(GameState, Row, Col, []) :-
+possible_moves_up_right_first(GameState, Row, Col, _, []) :-
     NewRow is Row+1,
     NewCol is Col+1,
     occupied(NewRow, NewCol, GameState), !.
 
-possible_moves_up_right_first(GameState, Row, Col, []) :-
+possible_moves_up_right_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row+1,
     NewCol is Col+1,
-    char_at_position(GameState, Row-Col, Piece),
-    is_scared(NewRow, NewCol, Piece, GameState), !.
+    is_scared(NewRow, NewCol, Piece, GameState),
+    NR is NewRow+1,
+    NC is NewCol+1,
+    possible_moves_up_right(GameState, NR, NC, Piece, Moves).
     
-possible_moves_up_right_first(GameState, Row, Col, Moves) :-
+possible_moves_up_right_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row+1,
     NewCol is Col+1,
-    char_at_position(GameState, Row-Col, Piece),
     coordinates_to_position(NewRow, NewCol,  Position),
     NR is NewRow +1,
     NC is NewCol +1,
@@ -154,24 +156,25 @@ possible_moves_up_right(GameState, Row, Col, Piece, Moves) :-
    append([Position], MovesUp, Moves).
 
 
-possible_moves_up_left_first(_, Row, Col, []) :-
+possible_moves_up_left_first(_, Row, Col, _, []) :-
     (Row > 9 ; Col < 2), !.
 
-possible_moves_up_left_first(GameState, Row, Col, []) :-
+possible_moves_up_left_first(GameState, Row, Col, _, []) :-
     NewRow is Row+1,
     NewCol is Col-1,
     occupied(NewRow, NewCol, GameState), !.
 
-possible_moves_up_left_first(GameState, Row, Col, []) :-
+possible_moves_up_left_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row+1,
     NewCol is Col-1,
-    char_at_position(GameState, Row-Col, Piece),
-    is_scared(NewRow, NewCol, Piece, GameState), !.
+    is_scared(NewRow, NewCol, Piece, GameState),
+    NR is NewRow+1,
+    NC is NewCol-1,
+    possible_moves_up_left(GameState, NR, NC, Piece, Moves).
 
-possible_moves_up_left_first(GameState, Row, Col, Moves) :-
+possible_moves_up_left_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row+1,
     NewCol is Col-1,
-    char_at_position(GameState, Row-Col, Piece),
     coordinates_to_position(NewRow, NewCol,  Position),
     NR is NewRow +1,
     NC is NewCol -1,
@@ -200,22 +203,23 @@ possible_moves_up_left(GameState, Row, Col, Piece, Moves) :-
    append([Position], MovesUp, Moves).
 
 
-possible_moves_down_right_first(_, Row, Col, []) :-
+possible_moves_down_right_first(_, Row, Col, _, []) :-
     (Row < 2 ; Col > 9), !.
-possible_moves_down_right_first(GameState, Row, Col, []) :-
+possible_moves_down_right_first(GameState, Row, Col, _, []) :-
     NewRow is Row-1,
     NewCol is Col+1,
     occupied(NewRow, NewCol, GameState), !.
-possible_moves_down_right_first(GameState, Row, Col, []) :-
+possible_moves_down_right_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row-1,
     NewCol is Col+1,
-    char_at_position(GameState, Row-Col, Piece),
-    is_scared(NewRow, NewCol, Piece, GameState), !.
+    is_scared(NewRow, NewCol, Piece, GameState),
+    NR is NewRow-1,
+    NC is NewCol+1,
+    possible_moves_down_right(GameState, NR, NC, Piece, Moves).
 
-possible_moves_down_right_first(GameState, Row, Col, Moves) :-
+possible_moves_down_right_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row-1,
     NewCol is Col+1,
-    char_at_position(GameState, Row-Col, Piece),
     coordinates_to_position(NewRow, NewCol,  Position),
     NR is NewRow -1,
     NC is NewCol +1,
@@ -243,22 +247,24 @@ possible_moves_down_right(GameState, Row, Col, Piece, Moves) :-
    coordinates_to_position(Row, Col,  Position),
    append([Position], MovesUp, Moves).
 
-possible_moves_down_left_first(_, Row, Col, []) :-
+possible_moves_down_left_first(_, Row, Col, _, []) :-
     (Row < 2 ; Col < 2), !.
-possible_moves_down_left_first(GameState, Row, Col, []) :-
+possible_moves_down_left_first(GameState, Row, Col,  _, []) :-
     NewRow is Row-1,
     NewCol is Col-1,
     occupied(NewRow, NewCol, GameState), !.
-possible_moves_down_left_first(GameState, Row, Col, []) :-
-    NewRow is Row-1,
-    NewCol is Col-1,
-    char_at_position(GameState, Row-Col, Piece),
-    is_scared(NewRow, NewCol, Piece, GameState), !.
 
-possible_moves_down_left_first(GameState, Row, Col, Moves) :-
+possible_moves_down_left_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row-1,
     NewCol is Col-1,
-    char_at_position(GameState, Row-Col, Piece),
+    is_scared(NewRow, NewCol, Piece, GameState),
+    NR is NewRow-1,
+    NC is NewCol-1,
+    possible_moves_down_left(GameState, NR, NC, Piece, Moves).
+
+possible_moves_down_left_first(GameState, Row, Col, Piece, Moves) :-
+    NewRow is Row-1,
+    NewCol is Col-1,
     coordinates_to_position(NewRow, NewCol,  Position),
     NR is NewRow -1,
     NC is NewCol -1,
@@ -290,10 +296,11 @@ possible_moves_down_left(GameState, Row, Col, Piece, Moves) :-
 
 possible_moves_orthogonally(GameState, Position, Moves):-
         position_to_coordinates(Position, Row, Col),
-        possible_moves_up_first(GameState,Row,Col,MovesUp),
-        possible_moves_down_first(GameState,Row,Col,MovesDown),
-        possible_moves_left_first(GameState,Row,Col,MovesLeft),
-        possible_moves_right_first(GameState,Row,Col,MovesRight),
+        char_at_position(GameState, Row-Col, Piece),
+        possible_moves_up_first(GameState,Row,Col, Piece, MovesUp),
+        possible_moves_down_first(GameState,Row,Col, Piece, MovesDown),
+        possible_moves_left_first(GameState,Row,Col, Piece, MovesLeft),
+        possible_moves_right_first(GameState,Row,Col, Piece, MovesRight),
 
         append([], MovesUp, Moves1),
         append(Moves1, MovesDown, Moves2),
@@ -303,19 +310,19 @@ possible_moves_orthogonally(GameState, Position, Moves):-
 
 
 
-possible_moves_up_first(_, Row, _, []) :-
+possible_moves_up_first(_, Row, _, _, []) :-
     Row > 9, !.
-possible_moves_up_first(GameState, Row, Col, []) :-
+possible_moves_up_first(GameState, Row, Col, _, []) :-
     NewRow is Row+1,
     occupied(NewRow, Col, GameState), !.
-possible_moves_up_first(GameState, Row, Col, []) :-
+possible_moves_up_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row+1,
-    char_at_position(GameState, Row-Col, Piece),
-    is_scared(NewRow, Col, Piece, GameState), !.
+    is_scared(NewRow, Col, Piece, GameState),
+    NR is NewRow +1,
+    possible_moves_up(GameState, NR, Col, Piece, Moves).
 
-possible_moves_up_first(GameState, Row, Col, Moves) :-
+possible_moves_up_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row+1,
-    char_at_position(GameState, Row-Col, Piece),
     coordinates_to_position(NewRow, Col,  Position),
     NR is NewRow +1,
     possible_moves_up(GameState, NR, Col, Piece, Moves1),
@@ -340,21 +347,21 @@ possible_moves_up(GameState, Row, Col, Piece, Moves) :-
    append([Position], MovesUp, Moves).
 
 
-possible_moves_down_first(_, Row, _, []) :-
+possible_moves_down_first(_, Row, _, _, []) :-
     Row < 2, !.
 
-possible_moves_down_first(GameState, Row, Col, []) :-
+possible_moves_down_first(GameState, Row, Col, _, []) :-
     NewRow is Row-1,
     occupied(NewRow, Col, GameState), !.
 
-possible_moves_down_first(GameState, Row, Col, []) :-
+possible_moves_down_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row-1,
-    char_at_position(GameState, Row-Col, Piece),
-    is_scared(NewRow, Col, Piece, GameState), !.
+    is_scared(NewRow, Col, Piece, GameState),
+    NR is NewRow - 1,
+    possible_moves_down(GameState, NR, Col, Piece, Moves).
 
-possible_moves_down_first(GameState, Row, Col, Moves) :-
+possible_moves_down_first(GameState, Row, Col, Piece, Moves) :-
     NewRow is Row-1,
-    char_at_position(GameState, Row-Col, Piece),
     coordinates_to_position(NewRow, Col,  Position),
     NR is NewRow-1,
     possible_moves_down(GameState, NR, Col, Piece, Moves1),
@@ -377,21 +384,21 @@ possible_moves_down(GameState, Row, Col, Piece, Moves) :-
    coordinates_to_position(Row, Col,  Position),
    append([Position], MovesUp, Moves).
 
-possible_moves_left_first(_, _, Col, []) :-
+possible_moves_left_first(_, _, Col, _, []) :-
     Col < 2, !.
 
-possible_moves_left_first(GameState, Row, Col, []) :-
+possible_moves_left_first(GameState, Row, Col, _, []) :-
     NewCol is Col-1,
     occupied(Row, NewCol, GameState), !.
 
-possible_moves_left_first(GameState, Row, Col, []) :-
+possible_moves_left_first(GameState, Row, Col, Piece, Moves) :-
     NewCol is Col-1,
-    char_at_position(GameState, Row-Col, Piece),
-    is_scared(Row, NewCol, Piece, GameState), !.
+    is_scared(Row, NewCol, Piece, GameState),
+    NC is NewCol-1,
+    possible_moves_left(GameState, Row, NC, Piece, Moves).
 
-possible_moves_left_first(GameState, Row, Col, Moves) :-
+possible_moves_left_first(GameState, Row, Col, Piece, Moves) :-
     NewCol is Col-1,
-    char_at_position(GameState, Row-Col, Piece),
     coordinates_to_position(Row, NewCol,  Position),
     NC is NewCol-1,
     possible_moves_left(GameState, Row, NC, Piece, Moves1),
@@ -414,22 +421,20 @@ possible_moves_left(GameState, Row, Col, Piece, Moves) :-
    coordinates_to_position(Row, Col,  Position),
    append([Position], MovesUp, Moves).
 
-possible_moves_right_first(_, _, Col, []) :-
+possible_moves_right_first(_, _, Col, _, []) :-
     Col > 9, !.
-possible_moves_right_first(GameState, Row, Col, []) :-
+possible_moves_right_first(GameState, Row, Col, _, []) :-
     NewCol is Col+1,
     occupied(Row, NewCol, GameState), !.
 
-possible_moves_right_first(GameState, Row, Col, []) :-
+possible_moves_right_first(GameState, Row, Col, Piece, Moves) :-
     NewCol is Col+1,
-    char_at_position(GameState, Row-Col, Piece),
     is_scared(Row, NewCol, Piece, GameState),
     NC is NewCol +1,
-    possible_moves_right_first(GameState, Row, NC, _).
+    possible_moves_right(GameState, Row, NC, Piece, Moves).
 
-possible_moves_right_first(GameState, Row, Col, Moves) :-
+possible_moves_right_first(GameState, Row, Col, Piece, Moves) :-
     NewCol is Col+1,
-    char_at_position(GameState, Row-Col, Piece),
     coordinates_to_position(Row, NewCol,  Position),
     NC is NewCol+1,
     possible_moves_right(GameState, Row, NC, Piece, Moves1),

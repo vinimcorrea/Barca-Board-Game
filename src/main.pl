@@ -22,7 +22,7 @@ menu :-
     format("Option: ", []), read_input(Option),
     exec_initial_menu(Option), !.
  
-
+% show options to play
 display_menu :-
     write('    Made available under GNU General Public License v3, copyrighted material used under fair use for education'), nl,
     write('    We lay claim only over the software; this software cannot be used for commercial purposes'), nl, nl,
@@ -76,7 +76,7 @@ print_game_name :-
 
 
 /*
- * print_game_rules
+ * print_game_rules/0
  *
  * Displays game instructions.
 */
@@ -104,12 +104,6 @@ print_game_rules :-
     write('   A player can still win if animals are scared or trapped. Animals are never removed.'), nl, nl,
     write('PRESS ANY BUTTON TO GO BACK TO MAIN MENU'), nl, nl.
 
-% error on maplist
-% start_game/0
-%start_game :-
-%    write('Print board here'), nl,
-%    create_board(Board),
-%    display_board(Board).
 
 
 /**
@@ -142,12 +136,14 @@ exec_play_options(2) :-
     repeat,
     display_choose_level,
     format("Option: ", []), read_input(Option),
-    exec_choose_level(h-c, Option), !.
+    exec_choose_level(Option), !.
 % computer vs computer
 exec_play_options(3) :-
     display_choose_level,
     format("Option: ", []), read_input(Option),
-    exec_choose_level(c-c, Option), !.
+    exec_choose_level_only_bots(  Option), !.
+
+
 
 /*
  * display_choose_level
@@ -157,7 +153,6 @@ exec_play_options(3) :-
 display_choose_level :-
     nl,
     write('1. Level 1 (Random Moves)'), nl,
-    write('2. Level 2 (Greedy Algorithm)'), nl,
     write('0. Back'), nl.
 
 
@@ -166,16 +161,18 @@ display_choose_level :-
  *
  * Executes choose levels menu Option.
 */
-exec_choose_level(_, 0) :-
+exec_choose_level(0) :-
     menu.
 % level 1
-%exec_choose_level(Mode, 1) :-
-%%    play_game(Mode, 1, 5),
-%    !.
-%
-%% level 2
-%exec_choose_level(Mode, 2) :-
-%    play_game(Mode, 3, 7).
+exec_choose_level(1) :-
+    initial_board(FirstGameState),
+    display_game(FirstGameState),
+    game_loop_bot(1,FirstGameState).
 
+
+exec_choose_level_only_bots(1) :-
+    initial_board(FirstGameState),
+    display_game(FirstGameState),
+    game_loop_only_bot(1,FirstGameState).
 
 
