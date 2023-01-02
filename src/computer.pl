@@ -1,1 +1,0 @@
-% choose_move(+GameState, +Player, +Level, -Move). 

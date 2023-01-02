@@ -14,6 +14,29 @@ initial_board([
               [-, -, -, 'L', 'M', 'M', 'L', -, -, -],
               [-, -, -, -, 'E',  'E', -, -, -, -]]).
 
+% piece(?Character, ?Animal, ?Color). 
+piece(e, elephant, white).
+piece(m, mice, white).
+piece(l, lion, white).
+piece('E', elephant, black).
+piece('M', mice, black).
+piece('L', lion, black).
+
+
+% The piece is scared of another piece if it is of the opposite type.
+afraid_of(mice, lion).
+afraid_of(lion, elephant).
+afraid_of(elephant, mice).   
+
+player(1, white).
+player(2, black).
+
+watering_hole(d4).
+watering_hole(d7).
+watering_hole(g4).
+watering_hole(g7).
+
+
 % display_game(+GameState)
 display_game(Board) :-
         get_board_matrix(Board, Matrix),

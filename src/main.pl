@@ -1,17 +1,5 @@
-:- consult('computer.pl').
+:- consult('gameplay.pl').
 
-% piece(?color, ?type)
-piece(white,lion).
-piece(white,elephant).
-piece(white,mice).
-
-piece(black,lion).
-piece(black,elephant).
-piece(black,mice).
-
-% player(?color).
-player(white).
-player(black).
 
 /**
  * play
@@ -104,7 +92,7 @@ print_game_rules :-
     write('   M -> black mouse'), nl,
     write('   O -> watering hole'), nl, nl,
     write('SETUP'), nl,
-    write('   Each player has 2 lions, 2 elephants and 2 mouses in the beginning of each game.'), nl, nl,
+    write('   Each player has 2 lions, 2 elephants and 2 mouses in the game.'), nl, nl,
     write('RULES'), nl,
     write('   Mice move horizontally or vertically. Lions only move diagonally. Elephants move horizontally, vertically or diagonally. Animals'), nl,
     write('   can move any number of vacant squares in a single direction. Animals cannot jump over other animals.'), nl, nl,
@@ -146,7 +134,9 @@ exec_play_options(0) :-
     menu.
 % human vs human
 exec_play_options(1) :-
-    play_game(h-h, _, _).
+    initial_board(FirstGameState),
+    display_game(FirstGameState),
+    game_loop(1, FirstGameState).
 % human vs computer
 exec_play_options(2) :-
     repeat,
@@ -179,12 +169,13 @@ display_choose_level :-
 exec_choose_level(_, 0) :-
     menu.
 % level 1
-exec_choose_level(Mode, 1) :-
-    play_game(Mode, 1, 5).
-
-% level 2
-exec_choose_level(Mode, 2) :-
-    play_game(Mode, 3, 7).
+%exec_choose_level(Mode, 1) :-
+%%    play_game(Mode, 1, 5),
+%    !.
+%
+%% level 2
+%exec_choose_level(Mode, 2) :-
+%    play_game(Mode, 3, 7).
 
 
 

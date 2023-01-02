@@ -201,8 +201,7 @@ coordinates_to_position(6, 9, i6).
 coordinates_to_position(7, 9, i7).
 coordinates_to_position(8, 9, i8).
 coordinates_to_position(9, 9, i9).
-coordinates_to_position(10, 9, i9).
-coordinates_to_position(10, 10,i10).
+coordinates_to_position(10, 9,i10).
 coordinates_to_position(1, 10, j1).
 coordinates_to_position(2, 10, j2).
 coordinates_to_position(3, 10, j3).
