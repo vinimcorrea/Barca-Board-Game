@@ -2,6 +2,8 @@
 :- consult('utils.pl').
 :- consult('board.pl').
 
+% Given the Board, return element in the position (X, Y)
+% char_at_position(+GameState, +X-+Y, -Char)
 char_at_position(GameState, X-Y, Char) :-
     nth1(X, GameState, Row),
     nth1(Y, Row, Char).
@@ -14,14 +16,13 @@ occupied(X, Y, GameState) :-
     nth1(Y, Row, Char),
     is_occupied(Char).
 
+% is_occupied(-Char)
 is_occupied(Char) :-
     Char \= '-' , Char \= 'O'.
 
 
-% Define the afraid/4 predicate.
-% Animals from the same player dont fear each other. Only if the animal is from a different player.
-% return if a animal is scared from an adjacent animal.
-% is_scared(+Piece, +Row, +Y, +Board)
+% Check if Animal is trapped at that postion
+% is_trapped(+GameState, +Animal, +Position)
 is_trapped(GameState, mice, Position) :-
     possible_moves_orthogonally(GameState, Position, []).
 
@@ -31,6 +32,10 @@ is_trapped(GameState, lion, Position) :-
 is_trapped(GameState, elephant, Position) :-
     possible_moves_elephant(GameState, Position, []).
     
+
+% Animals from the same player dont fear each other. Only if the animal is from a different player.
+% return if a animal is scared from an adjacent animal.
+% is_scared(+Piece, +Row, +Y, +Board)
 is_scared(Row, Col, P, Board) :-
     piece(P, Type, Color),
     coordinates_to_position(Row, Col, Position),
@@ -86,6 +91,8 @@ is_scared(Row, Col, P, Board) :-
          Color \= C, !)
     ).
 
+% return the possible moves from Position if is an elephant
+% possible_moves_elephant(+GameState, +Position, -Moves)
 possible_moves_elephant(GameState, Position, Moves) :-
     possible_moves_diagonally(GameState, Position, MovesD),
     possible_moves_orthogonally(GameState, Position, MovesO),
@@ -93,7 +100,8 @@ possible_moves_elephant(GameState, Position, Moves) :-
     append([], MovesD, Moves1),
     append(Moves1, MovesO, Moves).
     
-    
+% return the possible moves from Position if animal moves diagonally
+% possible_moves_diagonally(+GameState, +Position, -Moves)
 possible_moves_diagonally(GameState, Position, Moves):-
         position_to_coordinates(Position, Row, Col),
         char_at_position(GameState, Row-Col, Piece),
@@ -107,7 +115,8 @@ possible_moves_diagonally(GameState, Position, Moves):-
         append(Moves2, MovesDownRight, Moves3),
         append(Moves3, MovesDownLeft, Moves).
 
-
+% return the possible moves from piece in position (Row, Col) moving up right
+% possible_moves_up_right_first(+GameState, +Row, +Col, +Piece,  -Moves)
 possible_moves_up_right_first(_, Row, Col,_, []) :-
     (Row > 9 ; Col > 9), !.
 
@@ -133,7 +142,8 @@ possible_moves_up_right_first(GameState, Row, Col, Piece, Moves) :-
     possible_moves_up_right(GameState, NR, NC, Piece, Moves1),
     append([Position], Moves1, Moves).
 
-
+% because our piece is always occupied on the position, this is a aux predicate after check next move up right
+% possible_moves_up_right(+GameState, +Row, +Col, +Piece, -Moves)
 possible_moves_up_right(_, Row, Col, _, []) :-
    (Row > 10; Col > 10), !.
 
@@ -155,7 +165,8 @@ possible_moves_up_right(GameState, Row, Col, Piece, Moves) :-
    coordinates_to_position(Row, Col,  Position),
    append([Position], MovesUp, Moves).
 
-
+% return the possible moves from piece in position (Row, Col) moving up left
+% possible_moves_up_left_first(+GameState, +Row, +Col, +Piece,  -Moves)
 possible_moves_up_left_first(_, Row, Col, _, []) :-
     (Row > 9 ; Col < 2), !.
 
@@ -181,7 +192,8 @@ possible_moves_up_left_first(GameState, Row, Col, Piece, Moves) :-
     possible_moves_up_left(GameState, NR, NC, Piece, Moves1),
     append([Position], Moves1, Moves).
 
-
+% because our piece is always occupied on the position, this is a aux predicate after check next move up left
+% possible_moves_up_left(+GameState, +Row, +Col, +Piece, -Moves)
 possible_moves_up_left(_, Row, Col, _, []) :-
    (Row > 10; Col < 1), !.
 
@@ -202,7 +214,8 @@ possible_moves_up_left(GameState, Row, Col, Piece, Moves) :-
    coordinates_to_position(Row, Col,  Position),
    append([Position], MovesUp, Moves).
 
-
+% return the possible moves from piece in position (Row, Col) moving down right
+% possible_moves_down_right_first(+GameState, +Row, +Col, +Piece,  -Moves)
 possible_moves_down_right_first(_, Row, Col, _, []) :-
     (Row < 2 ; Col > 9), !.
 possible_moves_down_right_first(GameState, Row, Col, _, []) :-
@@ -226,7 +239,8 @@ possible_moves_down_right_first(GameState, Row, Col, Piece, Moves) :-
     possible_moves_down_right(GameState, NR, NC, Piece, Moves1),
     append([Position], Moves1, Moves).
 
-
+% because our piece is always occupied on the position, this is a aux predicate after check next move down right
+% possible_moves_down_right(+GameState, +Row, +Col, +Piece, -Moves)
 possible_moves_down_right(_, Row, Col, _, []) :-
    (Row < 1; Col > 10), !.
 
@@ -247,6 +261,8 @@ possible_moves_down_right(GameState, Row, Col, Piece, Moves) :-
    coordinates_to_position(Row, Col,  Position),
    append([Position], MovesUp, Moves).
 
+% return the possible moves from piece in position (Row, Col) moving down left
+% possible_moves_down_left_first(+GameState, +Row, +Col, +Piece,  -Moves)
 possible_moves_down_left_first(_, Row, Col, _, []) :-
     (Row < 2 ; Col < 2), !.
 possible_moves_down_left_first(GameState, Row, Col,  _, []) :-
@@ -271,7 +287,8 @@ possible_moves_down_left_first(GameState, Row, Col, Piece, Moves) :-
     possible_moves_down_left(GameState, NR, NC, Piece, Moves1),
     append([Position], Moves1, Moves).
 
-
+% because our piece is always occupied on the position, this is a aux predicate after check next move down left
+% possible_moves_down_left(+GameState, +Row, +Col, +Piece, -Moves)
 possible_moves_down_left(_, Row, Col, _, []) :-
    (Row < 1; Col < 1), !.
 
@@ -293,7 +310,8 @@ possible_moves_down_left(GameState, Row, Col, Piece, Moves) :-
    append([Position], MovesUp, Moves).
 
 
-
+% return the possible moves from Position if animal moves orthogonally
+% possible_moves_diagonally(+GameState, +Position, -Moves)
 possible_moves_orthogonally(GameState, Position, Moves):-
         position_to_coordinates(Position, Row, Col),
         char_at_position(GameState, Row-Col, Piece),
@@ -309,7 +327,8 @@ possible_moves_orthogonally(GameState, Position, Moves):-
 
 
 
-
+% return the possible moves from piece in position (Row, Col) moving up
+% possible_moves_up_first(+GameState, +Row, +Col, +Piece,  -Moves)
 possible_moves_up_first(_, Row, _, _, []) :-
     Row > 9, !.
 possible_moves_up_first(GameState, Row, Col, _, []) :-
@@ -346,7 +365,8 @@ possible_moves_up(GameState, Row, Col, Piece, Moves) :-
    coordinates_to_position(Row, Col,  Position),
    append([Position], MovesUp, Moves).
 
-
+% return the possible moves from piece in position (Row, Col) moving down
+% possible_moves_down_first(+GameState, +Row, +Col, +Piece,  -Moves)
 possible_moves_down_first(_, Row, _, _, []) :-
     Row < 2, !.
 
@@ -384,6 +404,8 @@ possible_moves_down(GameState, Row, Col, Piece, Moves) :-
    coordinates_to_position(Row, Col,  Position),
    append([Position], MovesUp, Moves).
 
+% return the possible moves from piece in position (Row, Col) moving left
+% possible_moves_left_first(+GameState, +Row, +Col, +Piece,  -Moves)
 possible_moves_left_first(_, _, Col, _, []) :-
     Col < 2, !.
 
@@ -421,6 +443,8 @@ possible_moves_left(GameState, Row, Col, Piece, Moves) :-
    coordinates_to_position(Row, Col,  Position),
    append([Position], MovesUp, Moves).
 
+% return the possible moves from piece in position (Row, Col) moving right
+% possible_moves_right_first(+GameState, +Row, +Col, +Piece,  -Moves)
 possible_moves_right_first(_, _, Col, _, []) :-
     Col > 9, !.
 possible_moves_right_first(GameState, Row, Col, _, []) :-

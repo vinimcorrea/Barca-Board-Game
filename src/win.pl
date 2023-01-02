@@ -1,13 +1,14 @@
 :- consult('board.pl').
 :- consult('logic.pl').
 
-% returns the number of pieces that the Player have on the watering hole.
-% player_piece_in_wh(+Board, +Player, -Count)
+% check if Player have more than or equal to 3 pieces in the watering holes
+% game_over(+Board, +Winner)
 game_over(Board, Winner) :-
     player_piece_in_wh(Board, Winner, Count),
     Count >= 3.
     
-
+% returns the number of pieces that the Player have on the watering hole.
+% player_piece_in_wh(+Board, +Player, -Count)
 player_piece_in_wh(Board, Player, Count) :-
         get_player_pieces(Board, Player, Pieces),
         count_positions([d4,d7,g4,g7], Pieces, Count),
@@ -23,20 +24,4 @@ count_positions(WateringHoles, [Pos|T], Count) :-
 count_positions(WateringHoles, [_|T], Count) :-
     count_positions(WateringHoles, T, Count).
 
-% Define the count_position/3 predicate
-%count_position(_, _, 0).
-%count_position(WateringHoles, Pos, Count) :-
-%    member(Pos, WateringHoles),
-%    Count is 1.
-
-
-%count_occurrences(Array, Player, Count) :-
-%        findall(X,
-%                (member(Row, Array),
-%                 member(X, Row),
-%                 X = watering_hole(_)),
-%                Occurrences),
-%        write('Player '), write(Player), write(' Has '), write(Occurrences),nl,
-%        length(Occurrences, Count).
-%                
 

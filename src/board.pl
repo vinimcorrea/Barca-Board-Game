@@ -2,6 +2,7 @@ padding_size(1).
 numberOfLines(10).
 numberOfCols(10).
 
+% initial_board(-GameState).
 initial_board([
               [-, -, -, -, e, e, -, -, -, -],
               [-, -, -, l, m, m, l, -, -, -],
@@ -24,13 +25,17 @@ piece('L', lion, black).
 
 
 % The piece is scared of another piece if it is of the opposite type.
+% afraid_of(?mice, ?lion)
 afraid_of(mice, lion).
 afraid_of(lion, elephant).
 afraid_of(elephant, mice).   
 
+% Respective color for each player
+% player(?Number, ?Color)
 player(1, white).
 player(2, black).
 
+% watering_hole(-D)
 watering_hole(d4).
 watering_hole(d7).
 watering_hole(g4).
@@ -76,6 +81,7 @@ add_line_symbols([Head | Tail], [[0 | Head] | ResultMatrix]) :-
         add_line_symbols(Tail, 2, ResultMatrix).
 
 % returns the board matrix
+% get_board_matrix(+Board, -BoardMatrix)
 get_board_matrix(Board, BoardMatrix) :-
         numberOfCols(N),
         columns(ColumnList, N),

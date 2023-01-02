@@ -19,7 +19,7 @@
 %char_type(Char, digit) :-
 %    member(Char, ['1','2','3','4','5','6','7','8','9','10']).
 
-
+% Return if animal in position (X, Y) to (X1, Y1) is a valid move
 % valid_move(+Board, +Animal, +X, +Y, +X1, +Y1)
 valid_move(Board, lion, X, Y, X1, Y1) :-
         coordinates_to_position(X,Y, Position),
@@ -39,7 +39,8 @@ valid_move(Board, elephant, X, Y, X1, Y1) :-
         possible_moves_elephant(Board, Position, Moves),
         member(Position1, Moves).
 
-
+% check if Input is a piece from Player
+% read_filter_input(+Board, +Player, -Input)
 read_filter_input(Board, Player, Input) :-
    write('Select your piece in the format (d8):  '), nl,
    read(Input),
@@ -47,52 +48,45 @@ read_filter_input(Board, Player, Input) :-
    select_piece(Board, Player, X-Y), !.
    
 read_filter_input(Board, Player, _) :-
-   write('Invalid Input! try on this format (a2): '), nl, nl,
+   write('Invalid piece! Try Again! '), nl, nl,
    read_filter_input(Board, Player, _).
 
-check_piece(Board, Player, X-Y) :-
-    select_piece(Board, Player, X-Y), !.
 
-check_piece(Board, Player, _-_) :-
-    write('Invalid piece or not yours! Try Again!'), nl,
-    read_piece(Board, Player, _, _, _).
-
-%check_afraid(Board, _, X-Y) :-
-%    \+ afraid(X, Y, Board), !.
-
-%check_afraid(Board, Player, _-_) :-
-%    write('Your piece is afraid! Try Again!'), nl,
+%check_piece(Board, Player, X-Y) :-
+%    select_piece(Board, Player, X-Y), !.
+%
+%check_piece(Board, Player, _-_) :-
+%    write('Invalid piece or not yours! Try Again!'), nl,
 %    read_piece(Board, Player, _, _, _).
-    
 
-%check_move(Board, Animal, X, Y, ToX, ToY) :-
-%    \+valid_move(Board, Animal, X, Y, ToX, ToY), !.
 
-    
+% read move (X1, Y1) and only successed if it's a valid move
+% read_move(+Board, +Animal, +Row, +Col, -X1, -Y1)   
 read_move(Board, Animal, Row, Col, X1, Y1) :-
         write('Choose your movement with the piece in the format (d8):  '), nl,
         read(Input),
         position_to_coordinates(Input, X1, Y1),
         valid_move(Board, Animal, Row, Col, X1, Y1), !.
 
-                                        
+
 read_move(Board, Animal, Row, Col, X1, Y1) :-
     write('Not a valid move! Try again!'), nl,
     read_move(Board, Animal, Row, Col, X1, Y1).
 
-
+% read piece and print board with moves to user
+% read_piece(+Board, +Player, -Row,-Col, -Animal)
 read_piece(Board, Player, Row, Col, Animal) :-
         read_filter_input(Board, Player, Input),
         position_to_coordinates(Input, Row, Col),
-%        check_piece(Board, Player, Row-Col),
         char_at_position(Board, Row-Col, Element),
         player(Player, Color),
         piece(Element, Animal, Color),
         coordinates_to_position(Row, Col, Position),
         print_board_with_moves(Board, Animal, Position), !,
         write('Your possible moves with this piece is marked with a X.'), nl, nl.
-%        write('Choose your movement with the piece in the format (d8):  '), nl.
 
+% Alternate turn between players and for each play, return an updated board
+% turn(+player, +Board, -UpdatedBoard)
 turn(Player, Board, UpdatedBoard):-
         write('Player:  '), write(Player), nl,
         get_player_pieces(Board, Player, Pieces),
@@ -114,6 +108,9 @@ turn(Player, Board, UpdatedBoard):-
         update_board(X-Y, ToX-ToY, Board, UpdatedBoard),
         nl.
 
+% game loop for PvP
+% until game is not over, repeat game_loop
+% game_loop(+Player, +Board)
 game_loop(Player,Board) :-
         turn(Player,Board,NewBoard),
         NextPlayer is (Player mod  2) + 1,
@@ -125,6 +122,8 @@ game_loop(Player, _) :-
     write('Player '), write(Player), write(' has won!'), nl,
     write('End of game. Thanks for playing!').
 
+% game loop for PvC
+%  game_loop_bot(+Player, +Board)
 game_loop_bot(2, Board) :-
     easybot(2, Board, NewBoard),
     \+ game_over(NewBoard, 2),
@@ -146,6 +145,8 @@ game_loop_bot(2, _) :-
     write('Player 2 (PC) has won!'), nl,
     write('End of game. Thanks for playing!').
 
+% game loop for CvC
+% game_loop_only_bot(+Player, +Board)
 game_loop_only_bot(1, Board) :-
     easybot(1, Board, NewBoard),
     \+ game_over(NewBoard, 1),

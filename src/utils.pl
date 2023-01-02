@@ -9,7 +9,7 @@ letter_is(h, 8).
 letter_is(i, 9).
 letter_is(j, 10).
 
-
+% position_to_coordinates(+Position, -X, -Y) 
 position_to_coordinates(a1, 1, 1).
 position_to_coordinates(a2, 2, 1).
 position_to_coordinates(a3, 3, 1).
@@ -111,7 +111,7 @@ position_to_coordinates(j8, 8, 10).
 position_to_coordinates(j9, 9, 10).
 position_to_coordinates(j10,10, 10).
 
-
+% coordinates_to_position(+X, +Y, -Position)
 coordinates_to_position(1, 1, a1).
 coordinates_to_position(2, 1, a2).
 coordinates_to_position(3, 1, a3).
